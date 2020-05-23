@@ -7,24 +7,23 @@ module Ls
     def initialize(directory)
       @directory = directory
     end
+    
+    def generate_at_argv_files
+      array = []
+      file_names = sort_and_reverse(Argv.files)
+      file_details = create_file_details(file_names).each(&:apend_info)
+      array << finalize(file_details)
+      array
+    end
 
     def generate_at_argv_directories
       array = []
       Dir.chdir(@directory) do
         file_names = sort_and_reverse(look_up_dir)
         file_details = create_file_details(file_names).each(&:apend_info)
-        array << "#{@directory}:"
         array << "total #{file_details.sum(&:blocks)}"
         array << finalize(file_details)
       end
-      array
-    end
-
-    def generate_at_argv_files
-      array = []
-      file_names = sort_and_reverse(Argv.files)
-      file_details = create_file_details(file_names).each(&:apend_info)
-      array << finalize(file_details)
       array
     end
 

@@ -24,10 +24,10 @@ module Ls
 
     def generate_with_argv_directories
       views = []
-      directories = sort_and_reverse(Argv.directories)
+      directories ||= sort_and_reverse(Argv.directories)
       directories.each do |directory|
-        views.push("\n") unless (views.empty? && Argv.files.empty?)
-        views << "#{directory}:"
+        views.push("\n") unless views.empty? && Argv.files.empty?
+        views << "#{directory}:" if (Argv.files.length + Argv.directories.length) > 1
         file_names = Dir.chdir(directory) { sort_and_reverse(look_up_dir) }
         views << show_name(file_names)
       end

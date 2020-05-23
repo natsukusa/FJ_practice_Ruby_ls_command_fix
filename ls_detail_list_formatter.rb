@@ -28,7 +28,8 @@ module Ls
       views = []
       directories ||= sort_and_reverse(Argv.directories)
       directories.each do |directory|
-        views.push("\n") unless (views.empty? && Argv.files.empty?)
+        views.push("\n") unless views.empty? && Argv.files.empty?
+        views << "#{directory}:" if (Argv.files.length + Argv.directories.length) > 1
         views << Directory.new(directory).generate_at_argv_directories
       end
       views
