@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
+require 'optparse'
 require './ls_argv.rb'
 require './ls_detail_list_formatter.rb'
 require './ls_name_list_formatter.rb'
 
 module Ls
-
   class Main
     def generate(option, argv)
       apply_argv_to_module(argv)
@@ -23,19 +23,16 @@ module Ls
       argv.each do |value|
         if File.file?(value)
           Argv.files << value
-        else File.directory?(value)
+        elsif File.directory?(value)
           Argv.directories << value
+        else
+          raise "ls: #{value}: No such file or directory"
         end
       end
-    end
-
-    def warning(value) # 現在未使用、例外処理等で代替したい。
-      puts "ls: #{value}: No such file or directory"
     end
   end
 
   if $PROGRAM_NAME == __FILE__
-    require 'optparse'
     opt = OptionParser.new
 
     option = {}

@@ -3,8 +3,28 @@
 require 'etc'
 
 module Ls
-
   class FileData
+    FILE_TYPE = {
+      'blockSpecial' => 'b',
+      'characterSpecial' => 'c',
+      'directory' => 'd',
+      'link' => 'l',
+      'socket' => 's',
+      'fifo' => 'p',
+      'file' => '-'
+    }.freeze
+
+    PERMISSION = {
+      '7' => 'rwx',
+      '6' => 'rw-',
+      '5' => 'r-x',
+      '4' => 'r--',
+      '3' => '-wx',
+      '2' => '-w-',
+      '1' => '--x',
+      '0' => '---'
+    }.freeze
+
     attr_accessor :file, :ftype, :mode, :nlink,
                   :owner, :group, :size, :mtime, :blocks
 
@@ -23,18 +43,18 @@ module Ls
       fill_blocks
     end
 
-    # def instans_to_h
-    #   { ftype: @ftype, mode: @mode, nlink: @nlink, owner: @owner,
-    #     group: @group, size: @size, mtime: @mtime, file: @file }
-    # end
+    def format_max_nlink_digit(file_details, file_data)
+      max_nlink_digit = file_details.max_by { |f| f.nlink.length }.nlink.length
+      file_data.nlink.to_s.rjust(max_nlink_digit)
+    end
 
-    private
+    def format_max_size_digit(file_details, file_data)
+      max_size_digit = file_details.max_by(&:size).size.to_s.length
+      file_data.size.to_s.rjust(max_size_digit)
+    end
 
     def fill_ftype
-      hash = { 'blockSpecial' => 'b', 'characterSpecial' => 'c',
-               'directory' => 'd', 'link' => 'l', 'socket' => 's',
-               'fifo' => 'p', 'file' => '-' }
-      self.ftype = File.ftype(@file).gsub(/[a-z]+/, hash)
+      self.ftype = FILE_TYPE[File.ftype(@file)]
     end
 
     def fill_mode
@@ -43,9 +63,8 @@ module Ls
     end
 
     def change_mode_style(permission)
-      permission.split(//).map do |number|
-        format('%<char>03d', char: number.to_i.to_s(2))
-          .gsub(/^1/, 'r').gsub(/1$/, 'x').tr('1', 'w').tr('0', '-')
+      permission.each_char.map do |number|
+        PERMISSION.fetch(number)
       end
     end
 

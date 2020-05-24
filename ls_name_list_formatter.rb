@@ -3,7 +3,6 @@
 require 'io/console/size'
 
 module Ls
-
   class NameListFormatter
     def generate
       puts finalized_view
@@ -18,16 +17,15 @@ module Ls
     end
 
     def generate_with_argv_files
-      file_names = Argv.files
-      show_name(sort_and_reverse(file_names))
+      show_name(sort_and_reverse(Argv.files))
     end
 
     def generate_with_argv_directories
       views = []
       directories ||= sort_and_reverse(Argv.directories)
       directories.each do |directory|
-        views.push("\n") unless views.empty? && Argv.files.empty?
-        views << "#{directory}:" if (Argv.files.length + Argv.directories.length) > 1
+        views << "\n" unless views.empty? && Argv.files.empty?
+        views << "#{directory}:" if needs_directory_name?
         file_names = Dir.chdir(directory) { sort_and_reverse(look_up_dir) }
         views << show_name(file_names)
       end
@@ -39,6 +37,9 @@ module Ls
       show_name(file_names)
     end
 
+    def needs_directory_name?
+      (Argv.files.length + Argv.directories.length) > 1
+    end
 
     def sort_and_reverse(array)
       Argv.option[:reverse] ? array.sort.reverse : array.sort
@@ -48,19 +49,15 @@ module Ls
       Argv.option[:all] ? Dir.glob('*', File::FNM_DOTMATCH) : Dir.glob('*')
     end
 
-
     def show_name(array)
       columns_width(array)
       number_of_rows(array)
       make_name_view(array)
     end
 
-    # private
-
     def console_width
       IO.console_size[1]
     end
-
 
     # @columns_width = 8, 16, 24, 32, 40, 48 ...
     def columns_width(array)
@@ -74,13 +71,10 @@ module Ls
     end
 
     def make_name_view(array)
-      sliced_list = []
       formatted_list = array.map { |name| name.ljust(columns_width(array)) }
-      formatted_list.each_slice(number_of_rows(array)) { |file| sliced_list << file } # map使える？
+      sliced_list = formatted_list.each_slice(number_of_rows(array)).map { |v| v }
       sliced_list.last << '' while sliced_list.last.size < number_of_rows(array)
       sliced_list.transpose.map(&:join)
     end
-
-
   end
 end

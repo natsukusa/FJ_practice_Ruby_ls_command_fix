@@ -4,7 +4,6 @@ require './ls_directory.rb'
 require './ls_file_data.rb'
 
 module Ls
-
   class DetailListFormatter
     def generate
       puts finalized_view
@@ -28,15 +27,19 @@ module Ls
       views = []
       directories ||= sort_and_reverse(Argv.directories)
       directories.each do |directory|
-        views.push("\n") unless views.empty? && Argv.files.empty?
-        views << "#{directory}:" if (Argv.files.length + Argv.directories.length) > 1
-        views << Directory.new(directory).generate_at_argv_directories
+        views << "\n" unless views.empty? && Argv.files.empty?
+        views << "#{directory}:" if needs_directory_name?
+        views << Directory.new(directory).generate_with_directories
       end
       views
     end
 
     def generate_with_non_argv
-      Directory.new(Dir.pwd).generate_at_non_argv
+      Directory.new(Dir.pwd).generate_with_directories
+    end
+
+    def needs_directory_name?
+      (Argv.files.length + Argv.directories.length) > 1
     end
 
     def sort_and_reverse(array)
