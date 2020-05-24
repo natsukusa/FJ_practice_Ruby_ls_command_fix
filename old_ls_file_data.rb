@@ -25,41 +25,41 @@ module Ls
       '0' => '---'
     }.freeze
 
-    attr_accessor :file, :file_info
+    attr_accessor :file, :ftype, :mode, :nlink,
+                  :owner, :group, :size, :mtime, :blocks
 
     def initialize(file)
       @file = file
-      @file_info = {}
     end
 
     def append_info
-      @file_info[:ftype] = fill_ftype
-      @file_info[:mode] = fill_mode
-      @file_info[:nlink] = fill_nlink
-      @file_info[:owner] = fill_owner
-      @file_info[:group] = fill_group
-      @file_info[:size] = fill_size
-      @file_info[:mtime] = fill_mtime
-      @file_info[:blocks] = fill_blocks
+      fill_ftype
+      fill_mode
+      fill_nlink
+      fill_owner
+      fill_group
+      fill_size
+      fill_mtime
+      fill_blocks
     end
 
     def format_max_nlink_digit(file_details, file_data)
-      max_nlink_digit = file_details.map { |f| f.file_info[:nlink] }.max.to_s.length
-      file_data.file_info[:nlink].to_s.rjust(max_nlink_digit)
+      max_nlink_digit = file_details.max_by { |f| f.nlink.length }.nlink.length
+      file_data.nlink.to_s.rjust(max_nlink_digit)
     end
 
     def format_max_size_digit(file_details, file_data)
-      max_size_digit = file_details.map { |f| f.file_info[:size] }.max.to_s.length
-      file_data.file_info[:size].to_s.rjust(max_size_digit)
+      max_size_digit = file_details.max_by(&:size).size.to_s.length
+      file_data.size.to_s.rjust(max_size_digit)
     end
 
     def fill_ftype
-      FILE_TYPE[File.ftype(@file)]
+      self.ftype = FILE_TYPE[File.ftype(@file)]
     end
 
     def fill_mode
       permission = File.lstat(@file).mode.to_s(8)[-3..-1]
-      change_mode_style(permission).join
+      self.mode = change_mode_style(permission).join
     end
 
     def change_mode_style(permission)
@@ -69,27 +69,27 @@ module Ls
     end
 
     def fill_nlink
-      File.lstat(@file).nlink
+      self.nlink = File.lstat(@file).nlink.to_s
     end
 
     def fill_owner
-      Etc.getpwuid(File.lstat(@file).uid).name
+      self.owner = Etc.getpwuid(File.lstat(@file).uid).name
     end
 
     def fill_group
-      Etc.getgrgid(File.lstat(@file).gid).name
+      self.group = Etc.getgrgid(File.lstat(@file).gid).name
     end
 
     def fill_size
-      File.lstat(@file).size
+      self.size = File.lstat(@file).size
     end
 
     def fill_mtime
-      File.lstat(@file).mtime.strftime('%_m %_d %H:%M')
+      self.mtime = File.lstat(@file).mtime.strftime('%_m %_d %H:%M')
     end
 
     def fill_blocks
-      File.lstat(@file).blocks.to_i
+      self.blocks = File.lstat(@file).blocks.to_i
     end
   end
 end

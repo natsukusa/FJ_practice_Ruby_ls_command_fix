@@ -9,7 +9,7 @@ module Ls
     def generate_at_argv_files
       array = []
       file_names = sort_and_reverse(Argv.files)
-      file_details = create_file_details(file_names).each(&:apend_info)
+      file_details = create_file_details(file_names).each(&:append_info)
       array << finalize(file_details)
       array
     end
@@ -18,21 +18,27 @@ module Ls
       array = []
       Dir.chdir(@directory) do
         file_names = sort_and_reverse(look_up_dir)
-        file_details = create_file_details(file_names).each(&:apend_info)
-        array << "total #{file_details.sum(&:blocks)}"
+        file_details = create_file_details(file_names).each(&:append_info)
+        array << "total #{calc_block_sum(file_details)}"
         array << finalize(file_details)
       end
       array
     end
 
+    private
+
+    def calc_block_sum(file_details)
+      file_details.map { |file_data| file_data.file_info[:blocks] }.sum
+    end
+
     # some long methods are to deal with rubocop abc size check.
     def finalize(file_details)
       file_details.map do |f|
-        "#{f.ftype}#{f.mode}  "\
+        "#{f.file_info[:ftype]}#{f.file_info[:mode]}  "\
         "#{f.format_max_nlink_digit(file_details, f)} "\
-        "#{f.owner.rjust(5)}  #{f.group}  "\
+        "#{f.file_info[:owner].rjust(5)}  #{f.file_info[:group]}  "\
         "#{f.format_max_size_digit(file_details, f)} "\
-        "#{f.mtime} #{f.file}"\
+        "#{f.file_info[:mtime]} #{f.file}"\
       end
     end
 

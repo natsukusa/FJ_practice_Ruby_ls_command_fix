@@ -16,6 +16,8 @@ module Ls
       views
     end
 
+    private
+
     def generate_with_argv_files
       show_name(sort_and_reverse(Argv.files))
     end
@@ -25,7 +27,7 @@ module Ls
       directories ||= sort_and_reverse(Argv.directories)
       directories.each do |directory|
         views << "\n" unless views.empty? && Argv.files.empty?
-        views << "#{directory}:" if needs_directory_name?
+        views << "#{directory}:" if need_directory_name?
         file_names = Dir.chdir(directory) { sort_and_reverse(look_up_dir) }
         views << show_name(file_names)
       end
@@ -37,7 +39,7 @@ module Ls
       show_name(file_names)
     end
 
-    def needs_directory_name?
+    def need_directory_name?
       (Argv.files.length + Argv.directories.length) > 1
     end
 
